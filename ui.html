@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GramWiz — AI for Instagram Creators</title>
+    <meta name="description"
+        content="GramWiz is an AI-powered Instagram creator tool. Generate stunning captions, hashtags, DM replies, and post ideas in seconds.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* DESIGN TOKENS */
+        :root {
+            --brand-300: #a992ff;
+            --brand-400: #8b63ff;
+            --brand-500: #7c3aed;
+            --brand-600: #6d28d9;
+            --bg-base: #09090b;
+            --bg-subtle: #111113;
+            --bg-surface: #18181b;
+            --bg-overlay: #1f1f23;
+            --bg-elevated: #27272a;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-default: rgba(255, 255, 255, 0.10);
+            --border-strong: rgba(255, 255, 255, 0.18);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+            --text-disabled: #52525b;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --grad-brand: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --shadow-brand: 0 0 0 1px rgba(124, 58, 237, 0.4), 0 4px 24px rgba(124, 58, 237, 0.25);
+            --r-sm: 6px;
+            --r-md: 10px;
+            --r-lg: 14px;
+            --r-xl: 18px;
+            --r-2xl: 24px;
+            --r-full: 9999px;
+            --s-1: 4px;
+            --s-2: 8px;
+            --s-3: 12px;
+            --s-4: 16px;
+            --s-5: 20px;
+            --s-6: 24px;
+            --s-8: 32px;
+            --s-10: 40px;
+            --s-12: 48px;
+            --s-16: 64px;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+            --ease-fast: all 120ms cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-normal: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-w: 256px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased
+        }
+
+        ::selection {
+            background: rgba(124, 58, 237, 0.3);
+            color: var(--text-primary)
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-base)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-elevated);
+            border-radius: var(--r-full)
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary)
+        }
+
+        /* LOADER */
+        .page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 500ms ease, visibility 500ms ease
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none
+        }
+
+        .loader-ring {
+            width: 44px;
+            height: 44px;
+            border: 3px solid var(--border-default);
+            border-top-color: var(--brand-500);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite
+        }
+
+        .loader-wordmark {
+            position: absolute;
+            margin-top: 64px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.04em
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0)
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -400px 0
+            }
+
+            100% {
+                background-position: 400px 0
+            }
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+        }
+
+        @keyframes floatY {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-8px)
+            }
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4)
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(124, 58, 237, 0)
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(124, 58, 237, 0)
+            }
+        }
+
+        /* APP SHELL */
+        .app-shell {
+            display: flex;
+            min-height: 100vh
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-subtle);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 200;
+            transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            overflow-x: hidden
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 0
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--s-3);
+            padding: var(--s-6);
+            border-bottom: 1px solid var(--border-subtle);
+            flex-shrink: 0
+        }
+
+        .sidebar-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r-md);
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-brand)
+        }
+
+        .sidebar-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .sidebar-wordmark {
+            font-size: 1.0625rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: var(--grad-brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: var(--s-3)
+        }
+
+        .nav-section-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            padding: var(--s-3) var(--s-3) var(--s-2);
+            margin-top: var(--s-4)
+        }
+
+        .nav-section-label:first-child {
+            margin-top: 0
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--s-3);
+            padding: 8px var(--s-3);
+            border-radius: var(--r-md);
+            cursor: pointer;
+            transition: var(--ease-fast);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            user-select: none;
+            position: relative;
+            border: 1px solid transparent;
+            margin-bottom: 2px
+        }
+
+        .nav-item-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            color: var(--text-tertiary);
+            transition: var(--ease-fast)
+        }
+
+        .nav-item:hover {
+            background: var(--bg-overlay);
+            color: var(--text-primary);
+            border-color: var(--border-subtle)
+        }
+
+        .nav-item:hover .nav-item-icon {
+            color: var(--text-secondary)
+        }
+
+        .nav-item.active {
+            background: rgba(124, 58, 237, 0.12);
+            color: var(--text-primary);
+            border-color: rgba(124, 58, 237, 0.22)
+        }
+
+        .nav-item.active .nav-item-icon {
+            color: var(--brand-400)
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 25%;
+            height: 50%;
+            width: 3px;
+            background: var(--brand-500);
+            border-radius: 0 var(--r-full) var(--r-full) 0
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 0.58rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: var(--r-full);
+            letter-spacing: 0.04em;
+            text-transform: uppercase
+        }
+
+        .sidebar-footer {
+            padding: var(--s-4) var(--s-3);
+            border-top: 1px solid var(--border-subtle);
+            flex-shrink: 0
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: var(--s-3);
+            padding: 8px var(--s-3);
+            border-radius: var(--r-md);
+            cursor: pointer;
+            transition: var(--ease-fast)
+        }
+
+        .sidebar-user:hover {
+            background: var(--bg-overlay)
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--grad-brand);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0
+        }
+
+        .user-info {
+            min-width: 0
+        }
+
+        .user-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .user-plan {
+            font-size: 0.7rem;
+            color: var(--text-tertiary)
+        }
+
+        /* TOPBAR (mobile) */
+        .topbar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 54px;
+            background: rgba(9, 9, 11, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            z-index: 300;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--s-4)
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--s-2)
+        }
+
+        .topbar-logo {
+            width: 26px;
+            height: 26px;
+            border-radius: var(--r-sm);
+            overflow: hidden
+        }
+
+        .topbar-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .topbar-wordmark {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: var(--grad-brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .hamburger {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r-md);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--ease-fast);
+            font-size: 0.85rem
+        }
+
+        .hamburger:hover {
+            background: var(--bg-overlay);
+            color: var(--text-primary)
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 199
+        }
+
+        .sidebar-overlay.active {
+            display: block
+        }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden
+        }
+
+        /* CONTENT SECTIONS */
+        .content-section {
+            display: none;
+            padding: 0 var(--s-8) var(--s-8);
+            animation: fadeUp 0.3s ease both
+        }
+
+        .content-section.active {
+            display: block
+        }
+
+        /* HERO */
+        .hero-section {
+            padding: var(--s-8) var(--s-8) var(--s-6);
+            animation: fadeUp 0.4s ease both
+        }
+
+        .hero-card {
+            position: relative;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--r-2xl);
+            overflow: hidden;
+            padding: var(--s-12) var(--s-10);
+            text-align: center
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124, 58, 237, 0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(236, 72, 153, 0.10) 0%, transparent 60%);
+            pointer-events: none
+        }
+
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.6), rgba(236, 72, 153, 0.6), transparent)
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--s-2);
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.22);
+            color: #c4b5fd;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 4px var(--s-3);
+            border-radius: var(--r-full);
+            margin-bottom: var(--s-5);
+            letter-spacing: 0.03em;
+            position: relative
+        }
+
+        .hero-eyebrow::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--brand-400);
+            animation: pulse-ring 2s infinite;
+            flex-shrink: 0
+        }
+
+        .hero-title {
+            font-size: clamp(1.875rem, 4vw, 3.25rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            color: var(--text-primary);
+            margin-bottom: var(--s-4);
+            position: relative
+        }
+
+        .gradient-text {
+            background: var(--grad-brand);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease infinite
+        }
+
+        .hero-description {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 480px;
+            margin: 0 auto var(--s-8);
+            line-height: 1.7;
+            position: relative
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: var(--s-3);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: var(--s-10);
+            position: relative
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: var(--s-8);
+            flex-wrap: wrap;
+            position: relative
+        }
+
+        .hero-stat {
+            text-align: center
+        }
+
+        .hero-stat-number {
+            font-size: 1.625rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: var(--grad-brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1
+        }
+
+        .hero-stat-label {
+            font-size: 0.775rem;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            font-weight: 500
+        }
+
+        .hero-stat-divider {
+            width: 1px;
+            height: 36px;
+            background: var(--border-subtle);
+            align-self: center
+        }
+
+        .feature-chips {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: var(--s-2);
+            margin-bottom: var(--s-8);
+            position: relative
+        }
+
+        .feature-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 4px var(--s-3);
+            border-radius: var(--r-full);
+            transition: var(--ease-fast)
+        }
+
+        .feature-chip:hover {
+            border-color: var(--border-strong);
+            color: var(--text-primary)
+        }
+
+        .feature-chip i {
+            font-size: 0.72rem;
+            color: var(--brand-400)
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-xl);
+            padding: var(--s-8);
+            margin-bottom: var(--s-6);
+            position: relative;
+            overflow: hidden;
+            transition: var(--ease-normal)
+        }
+
+        .card:hover {
+            border-color: var(--border-default);
+            box-shadow: var(--shadow-md)
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.35), transparent);
+            opacity: 0;
+            transition: var(--ease-normal)
+        }
+
+        .card:hover::before {
+            opacity: 1
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--s-4);
+            margin-bottom: var(--s-6)
+        }
+
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--r-md);
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.0625rem;
+            flex-shrink: 0;
+            color: var(--brand-400)
+        }
+
+        .card-title-group {
+            min-width: 0
+        }
+
+        .card-title {
+            font-size: 1.0625rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            line-height: 1.3
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            margin-top: 2px
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: var(--s-5)
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--s-2);
+            letter-spacing: 0.01em
+        }
+
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: var(--s-1)
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px var(--s-4);
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-default);
+            border-radius: var(--r-md);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-family: var(--font);
+            font-weight: 400;
+            transition: var(--ease-fast);
+            outline: none
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--text-disabled)
+        }
+
+        .form-input:hover,
+        .form-select:hover,
+        .form-textarea:hover {
+            border-color: var(--border-strong)
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--brand-500);
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.13)
+        }
+
+        .form-select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2371717a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+            appearance: none
+        }
+
+        .form-select option {
+            background: var(--bg-elevated)
+        }
+
+        .form-textarea {
+            min-height: 110px;
+            resize: vertical;
+            line-height: 1.6
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--s-4)
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--s-2);
+            padding: 10px var(--s-5);
+            border: 1px solid transparent;
+            border-radius: var(--r-md);
+            font-family: var(--font);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--ease-fast);
+            text-decoration: none;
+            white-space: nowrap;
+            user-select: none;
+            position: relative;
+            overflow: hidden
+        }
+
+        .btn:active {
+            transform: scale(0.97)
+        }
+
+        .btn i {
+            font-size: 0.82rem
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            transition: opacity 120ms
+        }
+
+        .btn:hover::after {
+            opacity: 0.04
+        }
+
+        .btn:active::after {
+            opacity: 0.08
+        }
+
+        .btn-primary {
+            background: var(--brand-600);
+            color: white;
+            border-color: var(--brand-500);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3)
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-500);
+            border-color: var(--brand-400);
+            box-shadow: var(--shadow-brand);
+            transform: translateY(-1px)
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--border-strong)
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-overlay);
+            transform: translateY(-1px)
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border-color: transparent
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-overlay);
+            color: var(--text-primary)
+        }
+
+        .btn-gradient {
+            background: var(--grad-brand);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow-brand)
+        }
+
+        .btn-gradient:hover {
+            box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.5), 0 8px 32px rgba(124, 58, 237, 0.4);
+            transform: translateY(-2px)
+        }
+
+        .btn-sm {
+            padding: 6px var(--s-3);
+            font-size: 0.78rem;
+            border-radius: var(--r-sm)
+        }
+
+        .btn-lg {
+            padding: 12px var(--s-6);
+            font-size: 0.9375rem;
+            border-radius: var(--r-lg)
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center
+        }
+
+        /* RESULTS */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--s-4);
+            margin-top: var(--s-6)
+        }
+
+        .result-card {
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-lg);
+            padding: var(--s-5);
+            transition: var(--ease-normal)
+        }
+
+        .result-card:hover {
+            border-color: var(--border-strong);
+            background: var(--bg-elevated);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm)
+        }
+
+        .result-card-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: var(--r-full);
+            background: rgba(124, 58, 237, 0.18);
+            color: var(--brand-400);
+            font-size: 0.68rem;
+            font-weight: 700;
+            margin-bottom: var(--s-3)
+        }
+
+        .result-card-text {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            line-height: 1.65
+        }
+
+        /* COPY BTN */
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--s-2);
+            padding: 5px var(--s-3);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--r-sm);
+            color: var(--text-tertiary);
+            font-size: 0.78rem;
+            font-weight: 500;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: var(--ease-fast);
+            margin-top: var(--s-3)
+        }
+
+        .copy-btn:hover {
+            border-color: var(--border-strong);
+            color: var(--text-primary)
+        }
+
+        .copy-btn.copied {
+            background: rgba(34, 197, 94, 0.12);
+            border-color: rgba(34, 197, 94, 0.28);
+            color: var(--success)
+        }
+
+        .copy-btn i {
+            font-size: 0.72rem
+        }
+
+        /* FILE UPLOAD */
+        .file-upload {
+            position: relative;
+            display: block
+        }
+
+        .file-upload input[type="file"] {
+            opacity: 0;
+            position: absolute;
+            inset: 0;
+            cursor: pointer;
+            z-index: 2
+        }
+
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--s-3);
+            padding: var(--s-10) var(--s-6);
+            background: var(--bg-overlay);
+            border: 2px dashed var(--border-default);
+            border-radius: var(--r-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--ease-normal);
+            color: var(--text-tertiary)
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--brand-500);
+            background: rgba(124, 58, 237, 0.04);
+            color: var(--text-secondary)
+        }
+
+        .file-upload-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--r-lg);
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            color: var(--brand-400)
+        }
+
+        .file-upload-text strong {
+            color: var(--text-secondary);
+            font-weight: 600
+        }
+
+        .file-upload-text small {
+            color: var(--text-disabled);
+            font-size: 0.78rem
+        }
+
+        #photo-preview {
+            margin-top: var(--s-4);
+            display: flex;
+            justify-content: center
+        }
+
+        #preview-image {
+            max-width: 160px;
+            max-height: 160px;
+            border-radius: var(--r-lg);
+            border: 1px solid var(--border-default);
+            box-shadow: var(--shadow-md)
+        }
+
+        .selected-files {
+            margin-top: var(--s-4)
+        }
+
+        .selected-files-inner {
+            background: rgba(124, 58, 237, 0.07);
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            border-radius: var(--r-md);
+            padding: var(--s-3) var(--s-4);
+            color: #c4b5fd;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: flex-start;
+            gap: var(--s-2)
+        }
+
+        .selected-files-inner i {
+            margin-top: 2px;
+            font-size: 0.82rem;
+            flex-shrink: 0
+        }
+
+        .selected-files-inner strong {
+            color: var(--text-primary)
+        }
+
+        /* MESSAGES */
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--s-3);
+            padding: var(--s-4);
+            border-radius: var(--r-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: var(--s-4);
+            animation: slideInLeft 0.3s ease both
+        }
+
+        .message i {
+            margin-top: 1px;
+            flex-shrink: 0
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.18);
+            color: #86efac
+        }
+
+        .message.warning {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.18);
+            color: #fcd34d
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.18);
+            color: #fca5a5
+        }
+
+        .message.info {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.18);
+            color: #93c5fd
+        }
+
+        /* LOADING */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--s-4);
+            padding: var(--s-12) var(--s-6);
+            color: var(--text-tertiary);
+            font-size: 0.875rem
+        }
+
+        .loading-spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid var(--border-default);
+            border-top-color: var(--brand-500);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-overlay) 0%, var(--bg-elevated) 50%, var(--bg-overlay) 100%);
+            background-size: 400px 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: var(--r-md)
+        }
+
+        .skeleton-text {
+            height: 14px;
+            margin: 6px 0
+        }
+
+        /* RADIO */
+        .radio-group {
+            display: flex;
+            gap: var(--s-2);
+            flex-wrap: wrap;
+            margin-top: var(--s-2)
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: var(--s-2);
+            cursor: pointer;
+            padding: 8px var(--s-4);
+            border-radius: var(--r-md);
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-default);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--ease-fast)
+        }
+
+        .radio-option:hover {
+            border-color: var(--brand-500);
+            color: var(--text-primary)
+        }
+
+        .radio-option input[type="radio"] {
+            accent-color: var(--brand-500);
+            width: 14px;
+            height: 14px
+        }
+
+        .radio-option:has(input:checked) {
+            background: rgba(124, 58, 237, 0.10);
+            border-color: rgba(124, 58, 237, 0.30);
+            color: var(--text-primary)
+        }
+
+        /* DIVIDER */
+        .divider {
+            height: 1px;
+            background: var(--border-subtle);
+            margin: var(--s-6) 0
+        }
+
+        /* RESULTS HEADER */
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: var(--s-8);
+            padding-top: var(--s-6);
+            border-top: 1px solid var(--border-subtle);
+            flex-wrap: wrap;
+            gap: var(--s-3)
+        }
+
+        .results-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--s-2)
+        }
+
+        .results-title i {
+            color: var(--brand-400);
+            font-size: 0.82rem
+        }
+
+        /* PRICING */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--s-5)
+        }
+
+        .pricing-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--r-xl);
+            padding: var(--s-6);
+            position: relative;
+            transition: var(--ease-normal);
+            overflow: hidden
+        }
+
+        .pricing-card:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg)
+        }
+
+        .pricing-card.featured {
+            background: linear-gradient(160deg, rgba(124, 58, 237, 0.10) 0%, rgba(236, 72, 153, 0.04) 100%);
+            border-color: rgba(124, 58, 237, 0.30)
+        }
+
+        .pricing-card.featured::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--grad-brand)
+        }
+
+        .pricing-badge {
+            display: inline-block;
+            background: var(--grad-brand);
+            color: white;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: var(--r-full);
+            margin-bottom: var(--s-4);
+            letter-spacing: 0.04em;
+            text-transform: uppercase
+        }
+
+        .pricing-name {
+            font-size: 1.1875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em
+        }
+
+        .pricing-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin: var(--s-3) 0 var(--s-5)
+        }
+
+        .pricing-amount {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text-primary)
+        }
+
+        .pricing-currency {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            align-self: flex-start;
+            margin-top: 6px
+        }
+
+        .pricing-period {
+            font-size: 0.85rem;
+            color: var(--text-tertiary)
+        }
+
+        .pricing-divider {
+            height: 1px;
+            background: var(--border-subtle);
+            margin: var(--s-5) 0
+        }
+
+        .pricing-features {
+            list-style: none
+        }
+
+        .pricing-feature {
+            display: flex;
+            align-items: center;
+            gap: var(--s-3);
+            padding: var(--s-2) 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary)
+        }
+
+        .pricing-feature i {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.12);
+            color: var(--success);
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0
+        }
+
+        /* PREMIUM GATE */
+        .premium-gate {
+            text-align: center;
+            padding: var(--s-10) var(--s-6)
+        }
+
+        .premium-gate-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--r-xl);
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.625rem;
+            margin: 0 auto var(--s-5);
+            animation: floatY 3s ease-in-out infinite
+        }
+
+        .premium-gate h3 {
+            font-size: 1.0625rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--s-2)
+        }
+
+        .premium-gate p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--s-6);
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto
+        }
+
+        .premium-gate-features {
+            display: flex;
+            flex-direction: column;
+            gap: var(--s-2);
+            margin-top: var(--s-5)
+        }
+
+        .premium-gate-feature {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--s-2);
+            font-size: 0.8rem;
+            color: var(--text-tertiary)
+        }
+
+        .premium-gate-feature i {
+            color: var(--success);
+            font-size: 0.72rem
+        }
+
+        /* SCROLL REVEAL */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.45s ease, transform 0.45s ease
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0)
+        }
+
+        /* HASHTAG CLOUD */
+        .hashtag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--s-2);
+            padding: var(--s-5);
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-lg);
+            margin-top: var(--s-4)
+        }
+
+        .hashtag-tag {
+            background: rgba(124, 58, 237, 0.10);
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            color: #c4b5fd;
+            padding: 4px 10px;
+            border-radius: var(--r-full);
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: var(--ease-fast)
+        }
+
+        .hashtag-tag:hover {
+            background: rgba(124, 58, 237, 0.20);
+            border-color: rgba(124, 58, 237, 0.38);
+            color: #ddd6fe
+        }
+
+        /* FOOTER GRID */
+        .footer-grid {
+            padding: 0 var(--s-8) var(--s-8);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--s-6)
+        }
+
+        /* RESPONSIVE */
+        @media(max-width:1024px) {
+            :root {
+                --sidebar-w: 220px
+            }
+        }
+
+        @media(max-width:768px) {
+            .sidebar {
+                transform: translateX(-100%)
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0)
+            }
+
+            .topbar {
+                display: flex
+            }
+
+            .main {
+                margin-left: 0;
+                padding-top: 54px
+            }
+
+            .hero-section,
+            .content-section,
+            .footer-grid {
+                padding-left: var(--s-4);
+                padding-right: var(--s-4)
+            }
+
+            .hero-card {
+                padding: var(--s-8) var(--s-4)
+            }
+
+            .hero-stat-divider {
+                display: none
+            }
+
+            .hero-stats {
+                gap: var(--s-5)
+            }
+
+            .card {
+                padding: var(--s-5)
+            }
+
+            .form-row {
+                grid-template-columns: 1fr
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:480px) {
+            .hero-title {
+                font-size: 1.75rem
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center
+            }
+
+            .hero-actions .btn {
+                width: 100%;
+                justify-content: center
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important
+            }
+        }
+
+        .btn:focus-visible,
+        .nav-item:focus-visible,
+        .form-input:focus-visible,
+        .form-select:focus-visible,
+        .form-textarea:focus-visible,
+        .copy-btn:focus-visible {
+            outline: 2px solid var(--brand-500);
+            outline-offset: 2px
+        }
+
+        .btn:focus:not(:focus-visible),
+        .nav-item:focus:not(:focus-visible),
+        .copy-btn:focus:not(:focus-visible) {
+            outline: none
+        }
+
+        .text-muted {
+            color: var(--text-tertiary)
+        }
+
+        .flex-gap {
+            display: flex;
+            gap: var(--s-3);
+            flex-wrap: wrap
+        }
+
+        .mt-4 {
+            margin-top: var(--s-4)
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PAGE LOADER -->
+    <div class="page-loader" id="page-loader">
+        <div style="text-align:center;position:relative;">
+            <div class="loader-ring"></div>
+            <div class="loader-wordmark">GramWiz</div>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="app-shell">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+            <div class="sidebar-brand">
+                <div class="sidebar-logo">
+                    <img src="logo.png" alt="GramWiz">
+                </div>
+                <span class="sidebar-wordmark">GramWiz</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Create</div>
+                <div class="nav-item active" data-section="caption-generator" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-pen-nib"></i></span>Caption Generator
+                </div>
+                <div class="nav-item" data-section="photo-caption-generator" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-image"></i></span>Photo Captions
+                </div>
+                <div class="nav-item" data-section="dm-assistant" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-paper-plane"></i></span>DM Assistant
+                </div>
+                <div class="nav-item" data-section="post-ideas" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-lightbulb"></i></span>Post Ideas
+                </div>
+                <div class="nav-item" data-section="bulk-generator" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-layer-group"></i></span>Bulk Generator
+                    <span class="nav-badge">PRO</span>
+                </div>
+                <div class="nav-item" data-section="hashtag-generator" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-hashtag"></i></span>Hashtags
+                </div>
+
+                <div class="nav-section-label">Account</div>
+                <div class="nav-item" data-section="profile" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-user"></i></span>Profile
+                </div>
+                <div class="nav-item" data-section="billing" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-credit-card"></i></span>Billing
+                </div>
+                <div class="nav-item" data-section="plans" role="button" tabindex="0">
+                    <span class="nav-item-icon"><i class="fas fa-gem"></i></span>Plans &amp; Pricing
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar">JD</div>
+                    <div class="user-info">
+                        <div class="user-name">John Doe</div>
+                        <div class="user-plan">Free plan</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- TOPBAR mobile -->
+        <header class="topbar">
+            <div class="topbar-brand">
+                <div class="topbar-logo"><img src="logo.png" alt="GramWiz"></div>
+                <span class="topbar-wordmark">GramWiz</span>
+            </div>
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Open menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+
+        <!-- MAIN -->
+        <main class="main" id="main-content">
+
+            <!-- HERO -->
+            <div class="hero-section" id="hero-section">
+                <div class="hero-card">
+                    <div class="hero-eyebrow">AI-Powered &middot; Instagram Creator Tool</div>
+                    <h1 class="hero-title">
+                        Create content that<br>
+                        <span class="gradient-text">captivates &amp; converts</span>
+                    </h1>
+                    <p class="hero-description">
+                        GramWiz uses advanced AI to generate stunning captions, hashtags, DM replies, and post ideas
+                        tailored to your brand — in seconds.
+                    </p>
+                    <div class="feature-chips">
+                        <span class="feature-chip"><i class="fas fa-bolt"></i>Instant Generation</span>
+                        <span class="feature-chip"><i class="fas fa-brain"></i>AI-Powered</span>
+                        <span class="feature-chip"><i class="fas fa-hashtag"></i>Smart Hashtags</span>
+                        <span class="feature-chip"><i class="fas fa-layer-group"></i>Bulk Processing</span>
+                        <span class="feature-chip"><i class="fas fa-paper-plane"></i>DM Replies</span>
+                    </div>
+                    <div class="hero-actions">
+                        <button class="btn btn-gradient btn-lg" onclick="document.getElementById('post-topic').focus()">
+                            <i class="fas fa-magic"></i>Start Creating
+                        </button>
+                        <button class="btn btn-secondary btn-lg" onclick="showSection('plans')">
+                            <i class="fas fa-gem"></i>View Plans
+                        </button>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-number">10K+</div>
+                            <div class="hero-stat-label">Captions Generated</div>
+                        </div>
+                        <div class="hero-stat-divider"></div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number">50+</div>
+                            <div class="hero-stat-label">Content Types</div>
+                        </div>
+                        <div class="hero-stat-divider"></div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number">99%</div>
+                            <div class="hero-stat-label">Satisfaction Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAPTION GENERATOR -->
+            <section id="caption-generator" class="content-section active">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-pen-nib"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Caption Generator</h2>
+                            <p class="card-subtitle">Describe your post and get AI-crafted captions instantly.</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="post-topic">What's your post about?</label>
+                        <input type="text" class="form-input" placeholder="Sharing my morning routine with coffee..."
+                            id="post-topic">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="tone-select">Tone of voice</label>
+                        <select class="form-select" id="tone-select">
+                            <option value="Motivational">🔥 Motivational</option>
+                            <option value="Funny">😄 Funny</option>
+                            <option value="Professional">💼 Professional</option>
+                            <option value="Bold">⚡ Bold</option>
+                            <option value="Friendly">😊 Friendly</option>
+                        </select>
+                    </div>
+                    <div class="flex-gap">
+                        <button class="btn btn-primary" onclick="generateCaptions()">
+                            <i class="fas fa-magic"></i>Generate Captions
+                        </button>
+                    </div>
+                    <div id="caption-results" style="display:none;">
+                        <div class="results-header">
+                            <span class="results-title"><i class="fas fa-list"></i>Generated Captions</span>
+                        </div>
+                        <div class="results-grid" id="captions-grid"></div>
+                        <div class="divider"></div>
+                        <div class="form-group">
+                            <label class="form-label">Want hashtags for these captions?</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="want-hashtags" value="no" checked>
+                                    <span>No thanks</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="want-hashtags" value="yes">
+                                    <span>Yes, generate hashtags</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="hashtag-section" style="display:none;">
+                            <div class="form-group">
+                                <label class="form-label" for="caption-select">Choose a caption for hashtag
+                                    generation</label>
+                                <select class="form-select" id="caption-select"></select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="generateHashtagsForCaption()">
+                                <i class="fas fa-hashtag"></i>Generate Hashtags
+                            </button>
+                            <div id="hashtag-results"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PHOTO CAPTION GENERATOR -->
+            <section id="photo-caption-generator" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-image"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Photo Caption Generator</h2>
+                            <p class="card-subtitle">Upload a photo and get AI-generated captions that match the vibe.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Upload your photo</label>
+                        <div class="file-upload">
+                            <input type="file" accept="image/*" id="photo-file" onchange="updatePhotoPreview()">
+                            <label for="photo-file" class="file-upload-label">
+                                <div class="file-upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                <div class="file-upload-text">
+                                    <strong>Click to select a photo</strong> or drag &amp; drop<br>
+                                    <small>Supports JPG, PNG formats</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div id="photo-preview" style="display:none;">
+                            <img id="preview-image" alt="Preview">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="photo-description">Describe your photo <span
+                                class="text-muted">(optional)</span></label>
+                        <textarea class="form-textarea" placeholder="A beautiful sunset at the beach..."
+                            id="photo-description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="photo-tone-select">Tone of voice</label>
+                        <select class="form-select" id="photo-tone-select">
+                            <option value="Motivational">🔥 Motivational</option>
+                            <option value="Funny">😄 Funny</option>
+                            <option value="Professional">💼 Professional</option>
+                            <option value="Bold">⚡ Bold</option>
+                            <option value="Friendly">😊 Friendly</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="generatePhotoCaptions()">
+                        <i class="fas fa-magic"></i>Generate Photo Captions
+                    </button>
+                    <div id="photo-caption-results" style="display:none;">
+                        <div class="results-header">
+                            <span class="results-title"><i class="fas fa-list"></i>Generated Photo Captions</span>
+                        </div>
+                        <div class="results-grid" id="photo-captions-grid"></div>
+                        <div class="divider"></div>
+                        <div class="form-group">
+                            <label class="form-label">Want hashtags for these captions?</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="want-photo-hashtags" value="no" checked>
+                                    <span>No thanks</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="want-photo-hashtags" value="yes">
+                                    <span>Yes, generate hashtags</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="photo-hashtag-section" style="display:none;">
+                            <div class="form-group">
+                                <label class="form-label" for="photo-caption-select">Choose a caption for hashtag
+                                    generation</label>
+                                <select class="form-select" id="photo-caption-select"></select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="generateHashtagsForPhotoCaption()">
+                                <i class="fas fa-hashtag"></i>Generate Hashtags
+                            </button>
+                            <div id="photo-hashtag-results"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DM ASSISTANT -->
+            <section id="dm-assistant" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-paper-plane"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">DM Reply Assistant</h2>
+                            <p class="card-subtitle">Paste a DM message and get an AI-crafted reply.</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="dm-text">Paste the DM you received</label>
+                        <textarea class="form-textarea" placeholder="Thanks for the follow! Love your content 🔥"
+                            id="dm-text"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-type">Describe your Instagram profile</label>
+                        <input type="text" class="form-input" placeholder="Lifestyle blogger, fitness enthusiast..."
+                            id="profile-type">
+                        <p class="form-hint">Helps AI tailor the reply to your brand voice.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateDMReply()">
+                        <i class="fas fa-reply"></i>Generate Reply
+                    </button>
+                    <div id="dm-results"></div>
+                </div>
+            </section>
+
+            <!-- POST IDEAS -->
+            <section id="post-ideas" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-lightbulb"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Post Ideas &amp; Hooks Generator</h2>
+                            <p class="card-subtitle">Never run out of content ideas for your niche.</p>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="niche-select">Your niche</label>
+                            <select class="form-select" id="niche-select">
+                                <option value="Lifestyle">🌟 Lifestyle</option>
+                                <option value="Fitness">💪 Fitness</option>
+                                <option value="Travel">✈️ Travel</option>
+                                <option value="Finance">💰 Finance</option>
+                                <option value="Education">📚 Education</option>
+                                <option value="Fashion">👗 Fashion</option>
+                                <option value="Tech">💻 Tech</option>
+                                <option value="Motivation">🔥 Motivation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="content-type">Content type</label>
+                            <select class="form-select" id="content-type">
+                                <option value="Carousel">📱 Carousel</option>
+                                <option value="Reel">🎥 Reel</option>
+                                <option value="Story">📸 Story</option>
+                                <option value="Static Post">🖼️ Static Post</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generatePostIdeas()">
+                        <i class="fas fa-rocket"></i>Generate Ideas
+                    </button>
+                    <div id="ideas-results"></div>
+                </div>
+            </section>
+
+            <!-- BULK GENERATOR -->
+            <section id="bulk-generator" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-layer-group"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Bulk Caption Generator</h2>
+                            <p class="card-subtitle">Generate captions for multiple images at once. <span
+                                    class="nav-badge" style="font-size:0.62rem;">PRO</span></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Upload multiple images</label>
+                        <div class="file-upload">
+                            <input type="file" multiple accept="image/*" id="image-files" onchange="updateFileList()">
+                            <label for="image-files" class="file-upload-label">
+                                <div class="file-upload-icon"><i class="fas fa-images"></i></div>
+                                <div class="file-upload-text">
+                                    <strong>Click to select images</strong> or drag &amp; drop<br>
+                                    <small>Supports JPG, PNG · Multiple files allowed</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div id="selected-files" class="selected-files" style="display:none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="general-topic">General topic <span
+                                class="text-muted">(optional)</span></label>
+                        <input type="text" class="form-input"
+                            placeholder="Enter a general description for all images..." id="general-topic">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="bulk-tone">Tone of voice</label>
+                        <select class="form-select" id="bulk-tone">
+                            <option value="Motivational">🔥 Motivational</option>
+                            <option value="Funny">😄 Funny</option>
+                            <option value="Professional">💼 Professional</option>
+                            <option value="Bold">⚡ Bold</option>
+                            <option value="Friendly">😊 Friendly</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateBulkCaptions()">
+                        <i class="fas fa-magic"></i>Generate Bulk Captions
+                    </button>
+                    <div id="bulk-results"></div>
+                </div>
+            </section>
+
+            <!-- HASHTAG GENERATOR -->
+            <section id="hashtag-generator" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-hashtag"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Hashtag Generator</h2>
+                            <p class="card-subtitle">Paste your caption and get the perfect hashtag set.</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="hashtag-caption">Your Instagram caption</label>
+                        <textarea class="form-textarea" placeholder="Enter your Instagram caption here..."
+                            id="hashtag-caption"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateHashtags()">
+                        <i class="fas fa-search"></i>Generate Hashtags
+                    </button>
+                    <div id="standalone-hashtag-results"></div>
+                </div>
+            </section>
+
+            <!-- PROFILE -->
+            <section id="profile" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-user"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Your Profile</h2>
+                            <p class="card-subtitle">Personalize GramWiz to match your brand voice.</p>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="profile-name">Full Name</label>
+                            <input type="text" class="form-input" id="profile-name" placeholder="John Doe"
+                                value="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="profile-email">Email Address</label>
+                            <input type="email" class="form-input" id="profile-email" placeholder="your@email.com"
+                                value="john@example.com">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="profile-instagram">Instagram Username <span
+                                    class="text-muted">(optional)</span></label>
+                            <input type="text" class="form-input" id="profile-instagram" placeholder="@yourinstagram">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="profile-niche">Niche</label>
+                            <select class="form-select" id="profile-niche">
+                                <option value="Lifestyle">🌟 Lifestyle</option>
+                                <option value="Fitness">💪 Fitness</option>
+                                <option value="Travel">✈️ Travel</option>
+                                <option value="Finance">💰 Finance</option>
+                                <option value="Education">📚 Education</option>
+                                <option value="Fashion">👗 Fashion</option>
+                                <option value="Tech">💻 Tech</option>
+                                <option value="Motivation">🔥 Motivation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-bio">Bio <span
+                                class="text-muted">(optional)</span></label>
+                        <textarea class="form-textarea" id="profile-bio"
+                            placeholder="Tell us about yourself..."></textarea>
+                        <p class="form-hint">Helps AI match your tone and personality in generated content.</p>
+                    </div>
+                    <div class="flex-gap">
+                        <button class="btn btn-primary" onclick="saveProfile()">
+                            <i class="fas fa-check"></i>Save Profile
+                        </button>
+                        <button class="btn btn-ghost" onclick="resetProfile()">
+                            <i class="fas fa-rotate-left"></i>Reset
+                        </button>
+                    </div>
+                    <div id="profile-message"></div>
+                </div>
+            </section>
+
+            <!-- BILLING -->
+            <section id="billing" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-credit-card"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Billing</h2>
+                            <p class="card-subtitle">Manage your subscription and payment methods.</p>
+                        </div>
+                    </div>
+                    <p
+                        style="color:var(--text-secondary);font-size:0.9375rem;line-height:1.7;margin-bottom:var(--s-6);">
+                        Manage your payment methods and billing details securely. Your payment information is encrypted
+                        and handled by our secure payment processor.
+                    </p>
+                    <button class="btn btn-primary" onclick="addPaymentMethod()">
+                        <i class="fas fa-plus"></i>Add Payment Method
+                    </button>
+                    <div id="billing-message"></div>
+                </div>
+            </section>
+
+            <!-- PLANS -->
+            <section id="plans" class="content-section">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-gem"></i></div>
+                        <div class="card-title-group">
+                            <h2 class="card-title">Plans &amp; Pricing</h2>
+                            <p class="card-subtitle">Upgrade your GramWiz experience. Cancel anytime.</p>
+                        </div>
+                    </div>
+                    <div class="pricing-grid">
+                        <div class="pricing-card featured scroll-reveal">
+                            <div class="pricing-badge">Most Popular</div>
+                            <div class="pricing-name">Premium</div>
+                            <div class="pricing-price">
+                                <span class="pricing-currency">$</span>
+                                <span class="pricing-amount">9.99</span>
+                                <span class="pricing-period">/month</span>
+                            </div>
+                            <ul class="pricing-features">
+                                <li class="pricing-feature"><i class="fas fa-check"></i>Unlimited caption generation
+                                </li>
+                                <li class="pricing-feature"><i class="fas fa-check"></i>Photo caption generation</li>
+                                <li class="pricing-feature"><i class="fas fa-check"></i>Bulk processing</li>
+                                <li class="pricing-feature"><i class="fas fa-check"></i>Priority support</li>
+                            </ul>
+                            <div class="pricing-divider"></div>
+                            <button class="btn btn-primary btn-block" onclick="subscribeToPremium()">
+                                <i class="fas fa-rocket"></i>Get Premium
+                            </button>
+                        </div>
+                        <div class="pricing-card scroll-reveal">
+                            <div class="pricing-name">Pro</div>
+                            <div class="pricing-price">
+                                <span class="pricing-currency">$</span>
+                                <span class="pricing-amount">19.99</span>
+                                <span class="pricing-period">/month</span>
+                            </div>
+                            <ul class="pricing-features">
+                                <li class="pricing-feature"><i class="fas fa-check"></i>Everything in Premium</li>
+                                <li class="pricing-feature"><i class="fas fa-check"></i>API Access</li>
+                                <li class="pricing-feature"><i class="fas fa-check"></i>Custom AI training</li>
+                                <li class="pricing-feature"><i class="fas fa-check"></i>Team collaboration</li>
+                            </ul>
+                            <div class="pricing-divider"></div>
+                            <button class="btn btn-secondary btn-block" onclick="subscribeToPro()">
+                                <i class="fas fa-rocket"></i>Get Pro
+                            </button>
+                        </div>
+                    </div>
+                    <div id="plans-message" class="mt-4"></div>
+                </div>
+            </section>
+
+            <!-- FOOTER CARDS -->
+            <div class="footer-grid" id="footer-cards">
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-comment-dots"></i></div>
+                        <div class="card-title-group">
+                            <h3 class="card-title">Share Your Feedback</h3>
+                            <p class="card-subtitle">Help us make GramWiz better.</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="feedback-text">How can we improve GramWiz?</label>
+                        <textarea class="form-textarea" placeholder="Your feedback helps us make it better!"
+                            id="feedback-text"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="rating">Rate your experience</label>
+                        <select class="form-select" id="rating">
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ Good</option>
+                            <option value="3">⭐⭐⭐ Average</option>
+                            <option value="2">⭐⭐ Poor</option>
+                            <option value="1">⭐ Very Poor</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" onclick="submitFeedback()">
+                        <i class="fas fa-paper-plane"></i>Submit Feedback
+                    </button>
+                    <div id="feedback-message"></div>
+                </div>
+
+                <div class="card scroll-reveal">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-flask"></i></div>
+                        <div class="card-title-group">
+                            <h3 class="card-title">Join Beta Program</h3>
+                            <p class="card-subtitle">Get early access to new features.</p>
+                        </div>
+                    </div>
+                    <p
+                        style="color:var(--text-secondary);font-size:0.9375rem;line-height:1.7;margin-bottom:var(--s-5);">
+                        Be the first to try new AI features, shape our roadmap, and get exclusive access before public
+                        release.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label" for="beta-email">Email address</label>
+                        <input type="email" class="form-input" placeholder="your@email.com" id="beta-email">
+                    </div>
+                    <button class="btn btn-gradient" onclick="joinBeta()">
+                        <i class="fas fa-envelope"></i>Join Beta
+                    </button>
+                    <div id="beta-message"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Page init
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(() => {
+                const loader = document.getElementById('page-loader');
+                if (loader) loader.classList.add('hidden');
+            }, 800);
+            initScrollReveal();
+            setupNavigation();
+            setupHashtagRadio();
+            document.querySelectorAll('a[href^="#"]').forEach(a => {
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const t = document.querySelector(this.getAttribute('href'));
+                    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('mobile-open');
+            document.getElementById('sidebar-overlay').classList.remove('active');
+        }
+
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+                item.addEventListener('click', function () {
+                    showSection(this.getAttribute('data-section'), this);
+                    if (window.innerWidth <= 768) closeSidebar();
+                });
+                item.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+                });
+            });
+        }
+
+        function showSection(sectionId, clickedItem) {
+            const hero = document.getElementById('hero-section');
+            document.querySelectorAll('.content-section').forEach(s => {
+                s.style.opacity = '0';
+                s.style.transform = 'translateY(16px)';
+                setTimeout(() => s.classList.remove('active'), 150);
+            });
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+            setTimeout(() => {
+                const target = document.getElementById(sectionId);
+                if (target) {
+                    target.classList.add('active');
+                    requestAnimationFrame(() => {
+                        target.style.transition = 'opacity 250ms ease, transform 250ms ease';
+                        target.style.opacity = '1';
+                        target.style.transform = 'translateY(0)';
+                    });
+                    hero.style.display = sectionId === 'caption-generator' ? 'block' : 'none';
+                    document.getElementById('main-content').scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                const nav = clickedItem || document.querySelector('[data-section="' + sectionId + '"]');
+                if (nav) nav.classList.add('active');
+            }, 160);
+        }
+
+        function initScrollReveal() {
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target); } });
+            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+            document.querySelectorAll('.scroll-reveal').forEach(el => obs.observe(el));
+        }
+
+        function showLoading(containerId) {
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            c.innerHTML = '<div class="loading"><div class="loading-spinner"></div><span>Generating content with AI...</span></div>';
+            c.style.display = 'block';
+        }
+
+        function showMessage(containerId, message, type) {
+            type = type || 'warning';
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            const icons = { success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle', info: 'fa-info-circle' };
+            c.innerHTML = '<div class="message ' + type + '"><i class="fas ' + (icons[type] || icons.warning) + '"></i><span>' + message + '</span></div>';
+            c.style.display = 'block';
+        }
+
+        function showPremiumUpgradeMessage(containerId, message) {
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            c.innerHTML = '<div style="display:flex;justify-content:center;"><div class="premium-gate"><div class="premium-gate-icon">👑</div><h3>Premium Feature</h3><p>' + message + '</p><button class="btn btn-lg" onclick="showSection(\'plans\')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;box-shadow:0 4px 20px rgba(245,158,11,0.3);"><i class="fas fa-crown"></i>Upgrade to Premium</button><div class="premium-gate-features"><div class="premium-gate-feature"><i class="fas fa-check"></i>Unlimited caption generation</div><div class="premium-gate-feature"><i class="fas fa-check"></i>Bulk processing</div><div class="premium-gate-feature"><i class="fas fa-check"></i>Priority support</div></div></div></div>';
+            c.style.display = 'block';
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('profile-name').value;
+            const email = document.getElementById('profile-email').value;
+            if (!name.trim() || !email.trim()) { showMessage('profile-message', 'Please fill in all required fields.', 'warning'); return; }
+            const un = document.querySelector('.user-name');
+            const ua = document.querySelector('.user-avatar');
+            if (un) un.textContent = name;
+            if (ua) ua.textContent = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            showMessage('profile-message', 'Profile saved successfully!', 'success');
+        }
+
+        function resetProfile() {
+            document.getElementById('profile-name').value = 'John Doe';
+            document.getElementById('profile-email').value = 'john@example.com';
+            document.getElementById('profile-instagram').value = '';
+            document.getElementById('profile-niche').value = 'Lifestyle';
+            document.getElementById('profile-bio').value = '';
+            showMessage('profile-message', 'Profile reset to default values.', 'success');
+        }
+
+        function addPaymentMethod() {
+            showMessage('billing-message', 'Payment method setup coming soon. We\'ll notify you when it\'s ready!', 'info');
+        }
+
+        function subscribeToPremium() {
+            if (confirm('Ready to upgrade to Premium for $9.99/month?')) {
+                alert('Welcome to Premium!\n\nUnlimited captions\nPhoto caption generation\nBulk processing\nPriority support');
+                showMessage('plans-message', 'Successfully upgraded to Premium! Welcome to the premium experience!', 'success');
+                const up = document.querySelector('.user-plan');
+                if (up) up.textContent = 'Premium plan';
+            }
+        }
+
+        function subscribeToPro() {
+            if (confirm('Ready to upgrade to Pro for $19.99/month?')) {
+                alert('Welcome to Pro!\n\nEverything in Premium\nAPI Access\nCustom AI training\nTeam collaboration');
+                showMessage('plans-message', 'Successfully upgraded to Pro! You now have access to all features!', 'success');
+                const up = document.querySelector('.user-plan');
+                if (up) up.textContent = 'Pro plan';
+            }
+        }
+
+        function updateFileList() {
+            const files = document.getElementById('image-files').files;
+            const d = document.getElementById('selected-files');
+            if (files.length > 0) {
+                const names = Array.from(files).map(f => f.name).join(', ');
+                d.innerHTML = '<div class="selected-files-inner"><i class="fas fa-images"></i><div><strong>' + files.length + ' file(s) selected</strong><div style="color:var(--text-tertiary);font-size:0.78rem;margin-top:2px;word-break:break-all;">' + names + '</div></div></div>';
+                d.style.display = 'block';
+            } else {
+                d.style.display = 'none';
+            }
+        }
+
+        function updatePhotoPreview() {
+            const file = document.getElementById('photo-file').files[0];
+            const pv = document.getElementById('photo-preview');
+            const pi = document.getElementById('preview-image');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) { pi.src = e.target.result; pv.style.display = 'flex'; };
+                reader.readAsDataURL(file);
+            } else { pv.style.display = 'none'; }
+        }
+
+        function setupHashtagRadio() {
+            document.querySelectorAll('input[name="want-hashtags"]').forEach(r => {
+                r.addEventListener('change', function (e) {
+                    const s = document.getElementById('hashtag-section');
+                    s.style.display = e.target.value === 'yes' ? 'block' : 'none';
+                });
+            });
+            document.querySelectorAll('input[name="want-photo-hashtags"]').forEach(r => {
+                r.addEventListener('change', function (e) {
+                    const s = document.getElementById('photo-hashtag-section');
+                    s.style.display = e.target.value === 'yes' ? 'block' : 'none';
+                });
+            });
+        }
+
+        function copyToClipboard(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>Copied!';
+                setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = orig; }, 2000);
+            });
+        }
+
+        // Stubs (overridden by api.js)
+        function generateCaptions() { }
+        function generatePhotoCaptions() { }
+        function generateHashtagsForCaption() { }
+        function generateHashtagsForPhotoCaption() { }
+        function generateDMReply() { }
+        function generatePostIdeas() { }
+        function generateBulkCaptions() { }
+        function generateHashtags() { }
+        function submitFeedback() { }
+        function joinBeta() { }
+    </script>
+    <script src="api.js"></script>
+</body>
+
+</html>
